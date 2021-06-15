@@ -2,7 +2,7 @@
 
 
 ## Contributors
- Parker Dunn (pdunn91@gmail.com | pgdunn@bu.edu | parker_dunn@outlook.com)
+ Parker Dunn (pdunn91@gmail.com | pgdunn@bu.edu | parker_dunn@outlook.com)   
  Additional contributor
 
 ## Short Description
