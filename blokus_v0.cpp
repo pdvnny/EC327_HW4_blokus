@@ -14,6 +14,7 @@
 
 using std::cin;
 using std::cout;
+using std::map;
 using std::string;
 using std::vector;
 
@@ -23,9 +24,10 @@ typedef int TileID;
 
 class Tile {
   // common interface. required.
-  vector<vector<int>> shape;
 
  public:
+  int dimension;
+  vector<vector<int>> shape;
   void show() const;  // print out tile in tilebox format
   void rotate();
   void flipud();
@@ -38,30 +40,21 @@ class Tile {
 ///////////////////////////
 
 void Tile::show() const {
-
-  // this function needs to display the Tile
-
+ // need to modify "this" to flip the block vertically
 }
 
 void Tile::rotate() {
-
-  this // need to modify the object in this case
-
-
+ // need to modify "this" to flip the block vertically
 }
 
 
 void Tile::flipud() {
-
-  this // need to modify this to flip the block vertically
-
+  // need to modify "this" to flip the block vertically
 }
 
 
 void Tile::fliplr() {
-
-  this /// need to modify this to flip the shape horizontally
-
+  // need to modify "this" to flip the shape horizontally
 }
 
 
@@ -87,29 +80,25 @@ public:
     // constructor of a move
   }
 
-}
+};
 
 
 class Blokus {
   // common interface. required.
 
  public:
-  int nexttile_id;
-  map<int,Move> inventory;
+  int nexttile_id,
+      move_num;
+  map<int,Tile> inventory;
+  map<int,Move> moves;
 
   Blokus() {
-    next_id = 100;
-    move_num = 1;
+    nexttile_id = 100;
+    move_num = 0;
   }
 
   Tile* find_tile(TileID);
-  void create_piece() {
-    // read in the size
-    // read in strings
-    // make a Tile
-    // store it in a collection of Tiles
-  }
-
+  void create_piece();
   void reset();
   void show_tiles() const;
   void show_board() const;
@@ -117,6 +106,26 @@ class Blokus {
   void set_size(int);
 };
 
+// Structures for Blokus methods - allows compiling
+void Blokus::reset() {
+
+}
+
+void Blokus::show_tiles() const {
+
+}
+
+void Blokus::show_board() const {
+
+}
+
+void Blokus::play_tile(TileID ID, int r, int c) {
+
+}
+
+void Blokus::set_size(int dim) {
+  // Does this function resize the square board??
+}
 
 
 void Blokus::create_piece() {
@@ -126,19 +135,31 @@ void Blokus::create_piece() {
   vector<string> input{"***","**.","*.."};  // will need to come from cin
   
   for (int row = 0; row < input.size(); row++) {
-    string str_row = input.at(row)
+    string str_row = input.at(row);
     for (int col = 0; col < str_row.size(); col++) {
       if (str_row.at(col) == '*') (t.shape).push_back({row,col});
 
     }
   } // end of storing tile indices
 
+  // ADD ERROR CHECKING TO ENSURE THE PIECE HASN'T ALREADY BEEN CREATED.
+
+  inventory.insert({nexttile_id, t});
+  nexttile_id++;
 }
 
 
-
-
-
+Tile* Blokus::find_tile(TileID findkey) {
+  for (auto [key, value] : inventory) {
+    cout << "Tile: " << key << "\n";    // I think this was just something Prof. did in class. Probably need to remove.
+    if (key == findkey) {
+      cout << "- Found tile.\n";
+      return &inventory.at(key);
+    }
+  }
+  cout << "Tile not found.\n";
+  return nullptr;
+}
 
 
 
