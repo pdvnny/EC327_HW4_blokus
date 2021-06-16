@@ -3,8 +3,10 @@
 // Copyright 2021 
 
 #include <iostream>
+#include <map>
 #include <string>
 #include <vector>
+
 
 // allowed includes
 // tuple, utility, vector, map, set, unordered_map,
@@ -16,24 +18,20 @@ using std::string;
 using std::vector;
 
 
-
-
 typedef int TileID;
+
 
 class Tile {
   // common interface. required.
+  vector<vector<int>> shape;
 
-  // info that this class should save:
-  // (1) size
-  // (2) shape - via vector of strings (?) OR vector of indices (?)
-  // 
-  
  public:
   void show() const;  // print out tile in tilebox format
   void rotate();
   void flipud();
   void fliplr();
 };
+
 
 ///////////////////////////
 //   Tile class methods  //
@@ -67,14 +65,43 @@ void Tile::fliplr() {
 }
 
 
+class Move : private Tile { 
+// creating this variation of Tile to hold move information
+// These objects can be different from Tiles by holding additional info,
+  // but they should basically serve the same purpose as Tiles
+
+// Need to be careful that some of the functions stop being available publicly
+// ex. rotate, flipud, fliplr
+
+// Some necessary features for this class to work right...
+// (1) must be constructed with reference to oa Tile to provide the placed tile's info.
+
+
+public:
+
+  int move_num;
+  vector<int> position;           // will hold location of the piece
+  vector<vector<int>> placement;  // will hold the indices occupied on the board
+
+  Move(int move, int row, int col, Tile TileID) {
+    // constructor of a move
+  }
+
+}
 
 
 class Blokus {
   // common interface. required.
-  
-  vector<Tile> tiles; // a vector to hold all of the created tiles
 
  public:
+  int nexttile_id;
+  map<int,Move> inventory;
+
+  Blokus() {
+    next_id = 100;
+    move_num = 1;
+  }
+
   Tile* find_tile(TileID);
   void create_piece() {
     // read in the size
@@ -92,7 +119,21 @@ class Blokus {
 
 
 
+void Blokus::create_piece() {
+  Tile t;
+  
+  t.dimension = 3;                          // will need to come from cin
+  vector<string> input{"***","**.","*.."};  // will need to come from cin
+  
+  for (int row = 0; row < input.size(); row++) {
+    string str_row = input.at(row)
+    for (int col = 0; col < str_row.size(); col++) {
+      if (str_row.at(col) == '*') (t.shape).push_back({row,col});
 
+    }
+  } // end of storing tile indices
+
+}
 
 
 
