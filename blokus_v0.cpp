@@ -28,7 +28,7 @@ class Tile {
  public:
   int dimension;
   vector<vector<int>> shape;
-  void show() const;  // print out tile in tilebox format
+  void show() const;  // print out tile in tilebox format - made
   void rotate();
   void flipud();
   void fliplr();
@@ -39,12 +39,23 @@ class Tile {
 //   Tile class methods  //
 ///////////////////////////
 
-void Tile::show() const {
- // need to modify "this" to flip the block vertically
+void Tile::show() const { // print out tile based on it's saved indices
+    
+  // creating a vector of strings for printing
+  string tstr(dimension, '.');
+  vector<string> output(dimension,tstr);
+  
+  // modifying the string
+  for (vector<int> coordinate : shape)
+    (output.at(coordinate.at(0))).at(coordinate.at(1)) = '*';
+
+  // outputing the tile
+  for (string line : output)
+    cout << line << "\n";
 }
 
 void Tile::rotate() {
- // need to modify "this" to flip the block vertically
+ // need to modify "this" to rotate the block
 }
 
 
@@ -83,13 +94,17 @@ public:
 };
 
 
+// typedef map<TileID,Tile>::iterator itrInventory;
+// typedef map<int, Move>::iterator itrMove;
+
+
 class Blokus {
   // common interface. required.
 
  public:
-  int nexttile_id,
-      move_num;
-  map<int,Tile> inventory;
+  int nexttile_id;
+  TileID move_num;
+  map<TileID,Tile> inventory;
   map<int,Move> moves;
 
   Blokus() {
@@ -97,10 +112,10 @@ class Blokus {
     move_num = 0;
   }
 
-  Tile* find_tile(TileID);
-  void create_piece();
-  void reset();
-  void show_tiles() const;
+  Tile* find_tile(TileID);    // made
+  void create_piece();        // made - needs error checking feature
+  void reset();           
+  void show_tiles() const;     // made
   void show_board() const;
   void play_tile(TileID, int, int);
   void set_size(int);
@@ -111,8 +126,11 @@ void Blokus::reset() {
 
 }
 
-void Blokus::show_tiles() const {
-
+void Blokus::show_tiles() const { // goes through map and prints all of inventory
+  for (auto [key, value] : inventory) {
+    cout << "Tile ID: " << key << "\n";
+    value.show();
+  }
 }
 
 void Blokus::show_board() const {
@@ -130,15 +148,13 @@ void Blokus::set_size(int dim) {
 
 void Blokus::create_piece() {
   Tile t;
+  string temp_str;
   
-  t.dimension = 3;                          // will need to come from cin
-  vector<string> input{"***","**.","*.."};  // will need to come from cin
-  
-  for (int row = 0; row < input.size(); row++) {
-    string str_row = input.at(row);
-    for (int col = 0; col < str_row.size(); col++) {
-      if (str_row.at(col) == '*') (t.shape).push_back({row,col});
-
+  cin >> t.dimension;
+  for (int row = 0; row < t.dimension; row++) {
+    cin >> temp_str;
+    for (int col = 0; col < t.dimension; col++) {
+      if (temp_str.at(col) == '*') (t.shape).push_back({row, col});
     }
   } // end of storing tile indices
 
@@ -151,13 +167,13 @@ void Blokus::create_piece() {
 
 Tile* Blokus::find_tile(TileID findkey) {
   for (auto [key, value] : inventory) {
-    cout << "Tile: " << key << "\n";    // I think this was just something Prof. did in class. Probably need to remove.
+    cout << "Tile: " << key;    // I think this was just something Prof. did in class. Probably need to remove.
     if (key == findkey) {
       cout << "- Found tile.\n";
       return &inventory.at(key);
     }
   }
-  cout << "Tile not found.\n";
+  cout << "- Tile not found.\n";
   return nullptr;
 }
 
