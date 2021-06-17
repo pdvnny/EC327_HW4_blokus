@@ -38,7 +38,9 @@ using std::vector;
 // (7) Blokus::find_tile()
 // (8) Blokus::show_tiles()
 
-
+// Updated Features - June 17 - PD
+// -- Updated "find_tile" - changed printing features
+// -- 
 
 
 typedef int TileID;
@@ -115,7 +117,8 @@ class Blokus {
   void set_size(int);
 };
 
-// Structures for Blokus methods - allows compiling
+// Structures for Blokus methods
+
 void Blokus::reset() {
 
 }
@@ -132,11 +135,17 @@ void Blokus::show_board() const {
 }
 
 void Blokus::play_tile(TileID ID, int r, int c) {
+  // grab tile from inventory
+  // determine the board positions it will occupy
+  // place the piece on the board
+  // store the "move" in structure within blokus
 
+
+  // Create Move structure to hold ... (1) TileID, (2) indices for placed tile on board, (3) the move number for tile, (4) the tile placement charachter.
 }
 
 void Blokus::set_size(int dim) {
-  // Does this function resize the square board??
+  // This functoin re-sizes the square board
 }
 
 
@@ -161,13 +170,12 @@ void Blokus::create_piece() {
 
 Tile* Blokus::find_tile(TileID findkey) {
   for (auto [key, value] : inventory) {
-    cout << "Tile: " << key;    // I think this was just something Prof. did in class. Probably need to remove.
     if (key == findkey) {
-      cout << "- Found tile.\n";
+      cout << "Tile: " << key << "\n";
       return &inventory.at(key);
     }
   }
-  cout << "- Tile not found.\n";
+  cout << "\nTile not found.\n";
   return nullptr;
 }
 
