@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 
-
 // allowed includes
 // tuple, utility, vector, map, set, unordered_map,
 // unordered_set, algorithm
@@ -17,6 +16,29 @@ using std::cout;
 using std::map;
 using std::string;
 using std::vector;
+
+
+// NOTES from PD
+//  - I did one significantly different thing compared to the lecture material
+//  - Prof C saved the input tiles as vector of strings, but ... 
+//  - I decided to just save the indices of the shape. (I change that part if you guys don't like how I did this)
+
+//  - Print out of "show_tiles()" isn't quite right at the moment
+
+
+
+// Currently working functions/methods/attributes
+// (1) Tile::show()
+// (2) Tile::vector<vector<int>> shape
+// (3) Tile::dimension
+
+// (4) Blokus::nexttile_id
+// (5) Blokus::inventory
+// (6) Blokus::create_piece()
+// (7) Blokus::find_tile()
+// (8) Blokus::show_tiles()
+
+
 
 
 typedef int TileID;
@@ -69,33 +91,6 @@ void Tile::fliplr() {
 }
 
 
-class Move : private Tile { 
-// creating this variation of Tile to hold move information
-// These objects can be different from Tiles by holding additional info,
-  // but they should basically serve the same purpose as Tiles
-
-// Need to be careful that some of the functions stop being available publicly
-// ex. rotate, flipud, fliplr
-
-// Some necessary features for this class to work right...
-// (1) must be constructed with reference to oa Tile to provide the placed tile's info.
-
-
-public:
-
-  int move_num;
-  vector<int> position;           // will hold location of the piece
-  vector<vector<int>> placement;  // will hold the indices occupied on the board
-
-  Move(int move, int row, int col, Tile TileID) {
-    // constructor of a move
-  }
-
-};
-
-
-// typedef map<TileID,Tile>::iterator itrInventory;
-// typedef map<int, Move>::iterator itrMove;
 
 
 class Blokus {
@@ -105,7 +100,6 @@ class Blokus {
   int nexttile_id;
   TileID move_num;
   map<TileID,Tile> inventory;
-  map<int,Move> moves;
 
   Blokus() {
     nexttile_id = 100;
