@@ -92,7 +92,18 @@ void Tile::fliplr() {
   // need to modify "this" to flip the shape horizontally
 }
 
-
+struct Move {
+  char tile_id;
+  int move_num;
+  TileID tile;
+  vector<vector<int>> tile_loc;
+  Move(TileID t, int move, char t_id, vector<vector<int>> board_loc) {
+    tile = t;
+    move_num = move;
+    tile_id = t_id;
+    tile_loc = board_loc;
+  }
+};
 
 
 class Blokus {
@@ -100,8 +111,12 @@ class Blokus {
 
  public:
   int nexttile_id;
+  int board_dim;
+  string tile_id = "*#@ox";
   TileID move_num;
+  
   map<TileID,Tile> inventory;
+  vector<Move> Moves;
 
   Blokus() {
     nexttile_id = 100;
@@ -132,6 +147,8 @@ void Blokus::show_tiles() const { // goes through map and prints all of inventor
 
 void Blokus::show_board() const {
 
+
+
 }
 
 void Blokus::play_tile(TileID ID, int r, int c) {
@@ -140,8 +157,27 @@ void Blokus::play_tile(TileID ID, int r, int c) {
   // place the piece on the board
   // store the "move" in structure within blokus
 
-
-  // Create Move structure to hold ... (1) TileID, (2) indices for placed tile on board, (3) the move number for tile, (4) the tile placement charachter.
+  Tile* t_ptr = find_tile(ID);
+  if (t_ptr == nullptr) 
+    cout << "Exited play command.\n";
+  else {
+    vector<vector<int>> tile_placement = (t_ptr->shape);
+    // moves the tile to correct position on board
+    for (auto new_coord : tile_placement) {
+      new_coord.at(0) += r;
+      new_coord.at(1) += c;
+      for (Move existing_tile : Moves) {
+        for (auto exist_coord : existing_tile.tile_loc)
+          if (exist_coord.at(0) == new_coord.at(0) and exist_coord.at(1) == new_coord.at(1)) {
+            cout << "Cannot place tile on location already occupied by another tile.\n\n";
+            break;
+          }
+      }
+    }
+    Move m{ID, move_num, tile_id.at(move_num % 5), tile_placement};
+    Moves.push_back(m);
+  }
+  move_num++;
 }
 
 void Blokus::set_size(int dim) {
