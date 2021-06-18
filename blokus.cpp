@@ -93,14 +93,14 @@ void Tile::fliplr() {
 }
 
 struct Move {
-  char tile_id;
+  char tile_style;
   int move_num;
   TileID tile;
   vector<vector<int>> tile_loc;
   Move(TileID t, int move, char t_id, vector<vector<int>> board_loc) {
     tile = t;
     move_num = move;
-    tile_id = t_id;
+    tile_style = t_id;
     tile_loc = board_loc;
   }
 };
@@ -110,10 +110,10 @@ class Blokus {
   // common interface. required.
 
  public:
-  int nexttile_id;
+  TileID nexttile_id;
+  int move_num;
   int board_dim;
-  string tile_id = "*#@ox";
-  TileID move_num;
+  string tile_style = "*#@ox";
   
   map<TileID,Tile> inventory;
   vector<Move> Moves;
@@ -121,6 +121,7 @@ class Blokus {
   Blokus() {
     nexttile_id = 100;
     move_num = 0;
+    board_dim = 0;
   }
 
   Tile* find_tile(TileID);    // made
@@ -135,6 +136,9 @@ class Blokus {
 // Structures for Blokus methods
 
 void Blokus::reset() {
+  board_dim = 0;
+  Moves.clear();
+  move_num = 0;
 
 }
 
@@ -147,17 +151,30 @@ void Blokus::show_tiles() const { // goes through map and prints all of inventor
 
 void Blokus::show_board() const {
 
+  string empty_row(board_dim, '.');
+  vector<string> board(board_dim, empty_row);
 
+  for (Move m : Moves) {
+    for (auto coord : m.tile_loc) {
+      string row = board.at(coord.at(0));
+      row.at(coord.at(1)) = m.tile_style;
+    }
+  }
+
+  for (string row : board)
+    cout << row << "\n";
 
 }
 
 void Blokus::play_tile(TileID ID, int r, int c) {
-  // grab tile from inventory
-  // determine the board positions it will occupy
-  // place the piece on the board
-  // store the "move" in structure within blokus
 
+  // NEED TO ERROR CHECK IF TILE IS ON BOARD
+  // NEED TO ERROR CHECK IF TILE IS PLACE NEXT TO ANOTHER TILE
+
+  bool error = false;
   Tile* t_ptr = find_tile(ID);
+
+  
   if (t_ptr == nullptr) 
     cout << "Exited play command.\n";
   else {
@@ -166,22 +183,35 @@ void Blokus::play_tile(TileID ID, int r, int c) {
     for (auto new_coord : tile_placement) {
       new_coord.at(0) += r;
       new_coord.at(1) += c;
-      for (Move existing_tile : Moves) {
+      for (Move existing_tile : (this->Moves)) {
         for (auto exist_coord : existing_tile.tile_loc)
           if (exist_coord.at(0) == new_coord.at(0) and exist_coord.at(1) == new_coord.at(1)) {
-            cout << "Cannot place tile on location already occupied by another tile.\n\n";
-            break;
+            error = true;
           }
+          // error check if tile placement is on the board here
       }
+      if (error) break;
     }
-    Move m{ID, move_num, tile_id.at(move_num % 5), tile_placement};
-    Moves.push_back(m);
-  }
-  move_num++;
-}
+    
+    // check if tile is placed next to another tile here!!
+
+    if (error) {
+      cout << "Cannot place tile on location already occupied by another tile.\n\n";
+    } else {
+      Move m{ID, move_num, tile_style.at(move_num % 5), tile_placement};
+      Moves.push_back(m);
+      move_num++;
+    }   // end of "secondary else"
+  }   // end of "main else"
+}   // end of method - entirely controlled by one if-else
+
+
 
 void Blokus::set_size(int dim) {
-  // This functoin re-sizes the square board
+  board_dim = dim;
+
+  // REMOVAL OF PIECES OF BOARD NEEDS TO BE ADDED HERE
+
 }
 
 
