@@ -6,5 +6,3 @@ create 3
 *..
 *..
 show tiles
-play 100 0 0
-play 101 0 0

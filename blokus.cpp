@@ -18,7 +18,8 @@ using std::string;
 using std::vector;
 
 
-// NOTES from PD
+// NOTES from PD - from Wednesday, June 16
+
 //  - I did one significantly different thing compared to the lecture material
 //  - Prof C saved the input tiles as vector of strings, but ... 
 //  - I decided to just save the indices of the shape. (I change that part if you guys don't like how I did this)
@@ -27,20 +28,13 @@ using std::vector;
 
 
 
-// Currently working functions/methods/attributes
-// (1) Tile::show()
-// (2) Tile::vector<vector<int>> shape
-// (3) Tile::dimension
 
-// (4) Blokus::nexttile_id
-// (5) Blokus::inventory
-// (6) Blokus::create_piece()
-// (7) Blokus::find_tile()
-// (8) Blokus::show_tiles()
+// Updated Features - June 18 - PD
+// -- Got all of the Blokus methods working
+//      - made a note next to each method (below) about what additions are needed
 
-// Updated Features - June 17 - PD
-// -- Updated "find_tile" - changed printing features
-// -- 
+// -- Added a structure "Move" to store information
+// -- Added a function "check_board_area" for one of the methods
 
 
 typedef int TileID;
@@ -105,6 +99,18 @@ struct Move {
   }
 };
 
+void check_board_area(int r, int c, vector<vector<int>> compare_coords, bool* error, bool* proximity) {
+  // check if the new coordinate is already filled
+  for (auto coord : compare_coords) {
+    if (coord.at(0) == r and coord.at(1) == c) *error = true;
+
+    // check if there is a neighboring board piece
+    for (int i = -1; i < 2; i++)
+      for (int j = -1; j < 2; j++)
+        if ( (coord.at(0) + i) == r and (coord.at(1) + j) == c ) *proximity = true;
+  }
+}
+
 
 class Blokus {
   // common interface. required.
@@ -126,11 +132,11 @@ class Blokus {
 
   Tile* find_tile(TileID);    // made
   void create_piece();        // made - needs error checking feature
-  void reset();           
+  void reset();               // made
   void show_tiles() const;     // made
-  void show_board() const;
-  void play_tile(TileID, int, int);
-  void set_size(int);
+  void show_board() const;          // made
+  void play_tile(TileID, int, int); // made
+  void set_size(int);               // made - needs feature to remove tiles when they are off the board
 };
 
 // Structures for Blokus methods
@@ -150,53 +156,48 @@ void Blokus::show_tiles() const { // goes through map and prints all of inventor
 }
 
 void Blokus::show_board() const {
-
   string empty_row(board_dim, '.');
   vector<string> board(board_dim, empty_row);
-
+  
   for (Move m : Moves) {
     for (auto coord : m.tile_loc) {
-      string row = board.at(coord.at(0));
-      row.at(coord.at(1)) = m.tile_style;
+      int r = coord.at(0);
+      int c = coord.at(1);
+      (board.at(r)).at(c) = m.tile_style;
     }
   }
-
   for (string row : board)
     cout << row << "\n";
-
 }
+
 
 void Blokus::play_tile(TileID ID, int r, int c) {
 
-  // NEED TO ERROR CHECK IF TILE IS ON BOARD
-  // NEED TO ERROR CHECK IF TILE IS PLACE NEXT TO ANOTHER TILE
-
   bool error = false;
+  bool proximity = false;
   Tile* t_ptr = find_tile(ID);
 
-  
-  if (t_ptr == nullptr) 
+  if (t_ptr == nullptr) {
     cout << "Exited play command.\n";
-  else {
+  } else {
     vector<vector<int>> tile_placement = (t_ptr->shape);
+    
     // moves the tile to correct position on board
+    int counter = 0;
     for (auto new_coord : tile_placement) {
       new_coord.at(0) += r;
       new_coord.at(1) += c;
-      for (Move existing_tile : (this->Moves)) {
-        for (auto exist_coord : existing_tile.tile_loc)
-          if (exist_coord.at(0) == new_coord.at(0) and exist_coord.at(1) == new_coord.at(1)) {
-            error = true;
-          }
-          // error check if tile placement is on the board here
-      }
-      if (error) break;
+      tile_placement.at(counter) = {new_coord.at(0), new_coord.at(1)};
+      for (Move played_tile : Moves)
+        check_board_area(new_coord.at(0), new_coord.at(1), played_tile.tile_loc, &error, &proximity);
+      if (new_coord.at(0) >= board_dim or new_coord.at(1) >= board_dim) error = true;
+      counter++;
     }
     
-    // check if tile is placed next to another tile here!!
-
     if (error) {
-      cout << "Cannot place tile on location already occupied by another tile.\n\n";
+      cout << "Cannot place tile on another tile or off the board.\n";
+    } else if (!proximity and move_num > 0) {
+      cout << "Tile must neighbor another tile.\n";
     } else {
       Move m{ID, move_num, tile_style.at(move_num % 5), tile_placement};
       Moves.push_back(m);
