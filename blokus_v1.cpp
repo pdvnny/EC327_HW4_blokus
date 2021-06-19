@@ -1,5 +1,6 @@
 // Copyright 2021 Parker Dunn pgdunn@bu.edu (Alternate: pdunn91@gmail.com)
-
+// Copyright 2021
+// Copyright 2021 
 
 #include <iostream>
 #include <map>
@@ -16,10 +17,35 @@ using std::map;
 using std::string;
 using std::vector;
 
+
+// NOTES from PD - from Wednesday, June 16
+
+//  - I did one significantly different thing compared to the lecture material
+//  - Prof C saved the input tiles as vector of strings, but ... 
+//  - I decided to just save the indices of the shape. (I change that part if you guys don't like how I did this)
+
+//  - Print out of "show_tiles()" isn't quite right at the moment
+
+
+
+
+// Updated Features - June 18 - PD
+// -- Got all of the Blokus methods working
+//      - made a note next to each method (below) about what additions are needed
+
+// -- Added a structure "Move" to store information
+// -- Added a function "check_board_area" for one of the methods
+// -- Added a two more functions "same_tile_check" and "tile_compare"
+//    -- they error check that a newly created tile is not identical to inventory
+//    -- They are not done -> still need to account for some more obscure tiles
+
+
 typedef int TileID;
+
 
 class Tile {
   // common interface. required.
+
  public:
   int dimension;
   vector<vector<int>> shape;
@@ -28,6 +54,7 @@ class Tile {
   void flipud();
   void fliplr();
 };
+
 
 ///////////////////////////
 //   Tile class methods  //
@@ -49,25 +76,17 @@ void Tile::show() const { // print out tile based on it's saved indices
 }
 
 void Tile::rotate() {
- 
-  // create rotation matrix based on size
-
-
-  // perform rotation
-
+ // need to modify "this" to rotate the block
 }
 
 
 void Tile::flipud() {
-  int e = dimension - 1;
-  for (vector<int> coord : shape)
-    coord.at(0) = e - coord.at(0);
+  // need to modify "this" to flip the block vertically
 }
 
+
 void Tile::fliplr() {
-  int e = dimension - 1;
-  for (vector<int> coord : shape)
-    coord.at(1) = e - coord.at(1);
+  // need to modify "this" to flip the shape horizontally
 }
 
 struct Move {
@@ -95,24 +114,13 @@ void check_board_area(int r, int c, vector<vector<int>> compare_coords, bool* er
   }
 }
 
-void tile_shift(Tile* t) {
-  vector<vector<int>> indices = t->shape;
-  
-  int shift_col = t->dimension;
-  for (int i = 0; i < (t->dimension); i++)
-    if ((indices.at(i)).at(1) < shift_col) shift_col = (indices.at(i)).at(1);
-
-  int shift_row = t->dimension;
-    for (int i = 0; i < (t->dimension); i++)
-    if ((indices.at(i)).at(0) < shift_col) shift_row = (indices.at(i)).at(0);
-
-  for (auto index : t->shape) {
-    index.at(0) -= shift_row;
-    index.at(1) -= shift_col;
-  }
-}
-
 bool tile_compare (Tile* inv, Tile* t) {
+
+  // This is not complete ... 
+  // There are still obscure cases of similar tiles that this function does not realize are the same.
+  //  .*..       ....
+  //  .**.   vs  ..*.   Both are technically 3x4 and L shaped
+  //  ....       .**.   
   vector<vector<int>> inv_shape = inv->shape;
   vector<vector<int>> t_shape = t->shape;
 
@@ -133,9 +141,6 @@ bool tile_compare (Tile* inv, Tile* t) {
 
 bool same_tile_check(Tile inv, Tile t) {
   bool identical = false;
-
-  tile_shift(&inv);
-  tile_shift(&t);
 
   identical = tile_compare(&inv, &t);
   if (identical) return true;
@@ -166,6 +171,7 @@ bool same_tile_check(Tile inv, Tile t) {
 
 class Blokus {
   // common interface. required.
+
  public:
   TileID nexttile_id;
   int move_num;
@@ -271,43 +277,26 @@ void Blokus::set_size(int dim) {
 void Blokus::create_piece() {
   Tile t;
   string temp_str;
-  bool include = true, valid_dim = true;
-  int size;
+  bool include = true;
   
-  cin >> size;
-  for (char c : t.dimension)
-    if (c < '1' or c > '9') valid_dim = false;
-
-  t.dimension = size;
-  if (valid_dim) {
-    
-    // add indices to "shape"
-    for (int row = 0; row < t.dimension; row++) {
-      cin >> temp_str;
-      for (int col = 0; col < t.dimension; col++) {
-        if (temp_str.at(col) == '*') (t.shape).push_back({row, col});
-      }
-      for (char c : temp_str) {
-        if (c != '.' or c != '*') {
-          cout << "\nInvalid character entered. Use * and . to create pieces.\n";
-          include = false;
-        }
-      }
-    } // end of storing tile indices
-
-    // Compare indices to old tiles
-    for (auto [key, value] : inventory) {
-      if (same_tile_check(value, t)) {
-        cout << "Tile already in inventory. Tile " << key << "\n";
-        include = false;
-      }
+  cin >> t.dimension;
+  for (int row = 0; row < t.dimension; row++) {
+    cin >> temp_str;
+    for (int col = 0; col < t.dimension; col++) {
+      if (temp_str.at(col) == '*') (t.shape).push_back({row, col});
     }
+  } // end of storing tile indices
 
-    if (include) {
-      
-      inventory.insert({nexttile_id, t});
-      nexttile_id++;
+  for (auto [key, value] : inventory) {
+    if (same_tile_check(value, t)) {
+      cout << "Tile already in inventory. Tile " << key << "\n";
+      include = false;
     }
+  }
+
+  if (include) {
+    inventory.insert({nexttile_id, t});
+    nexttile_id++;
   }
 }
 
