@@ -35,6 +35,9 @@ using std::vector;
 
 // -- Added a structure "Move" to store information
 // -- Added a function "check_board_area" for one of the methods
+// -- Added a two more functions "same_tile_check" and "tile_compare"
+//    -- they error check that a newly created tile is not identical to inventory
+//    -- They are not done -> still need to account for some more obscure tiles
 
 
 typedef int TileID;
@@ -111,6 +114,60 @@ void check_board_area(int r, int c, vector<vector<int>> compare_coords, bool* er
   }
 }
 
+bool tile_compare (Tile* inv, Tile* t) {
+
+  // This is not complete ... 
+  // There are still obscure cases of similar tiles that this function does not realize are the same.
+  //  .*..       ....
+  //  .**.   vs  ..*.   Both are technically 3x4 and L shaped
+  //  ....       .**.   
+  vector<vector<int>> inv_shape = inv->shape;
+  vector<vector<int>> t_shape = t->shape;
+
+  if (inv_shape.size() != t_shape.size())
+    return false;
+
+  // compare two sets of tile indices
+  int count = 0;
+  for (vector<int> index1 : inv_shape)
+    for (vector<int> index2 : t_shape)
+      if (index1.at(0) == index2.at(0) and index1.at(1) == index2.at(1)) count++;
+
+  if (count == t_shape.size()) return true;
+
+  cout << "\nReached the end of 'tile_compare' unexpectedly.\n";
+  return false;
+}
+
+bool same_tile_check(Tile inv, Tile t) {
+  bool identical = false;
+
+  identical = tile_compare(&inv, &t);
+  if (identical) return true;
+  
+  t.rotate();
+  identical = tile_compare(&inv, &t);
+  if (identical) return true;
+  t.rotate();
+  identical = tile_compare(&inv, &t);
+  if (identical) return true;
+  t.rotate();
+  identical = tile_compare(&inv, &t);
+  if (identical) return true;
+  t.rotate();
+
+  t.fliplr();
+  identical = tile_compare(&inv, &t);
+  if (identical) return true;
+  t.fliplr();
+
+  t.flipud();
+  identical = tile_compare(&inv, &t);
+  if (identical) return true;
+
+  return false;
+}
+
 
 class Blokus {
   // common interface. required.
@@ -145,7 +202,6 @@ void Blokus::reset() {
   board_dim = 0;
   Moves.clear();
   move_num = 0;
-
 }
 
 void Blokus::show_tiles() const { // goes through map and prints all of inventory
@@ -158,7 +214,6 @@ void Blokus::show_tiles() const { // goes through map and prints all of inventor
 void Blokus::show_board() const {
   string empty_row(board_dim, '.');
   vector<string> board(board_dim, empty_row);
-  
   for (Move m : Moves) {
     for (auto coord : m.tile_loc) {
       int r = coord.at(0);
@@ -211,14 +266,18 @@ void Blokus::play_tile(TileID ID, int r, int c) {
 void Blokus::set_size(int dim) {
   board_dim = dim;
 
-  // REMOVAL OF PIECES OF BOARD NEEDS TO BE ADDED HERE
-
+  for (vector<Move>::iterator itr = Moves.begin(); itr != Moves.end(); itr++) {
+    vector<vector<int>> board_indices = (itr->tile_loc);
+    for (auto index : board_indices) 
+      if (index.at(0) >= dim or index.at(1) >= dim) Moves.erase(itr);
+  }
 }
 
 
 void Blokus::create_piece() {
   Tile t;
   string temp_str;
+  bool include = true;
   
   cin >> t.dimension;
   for (int row = 0; row < t.dimension; row++) {
@@ -228,10 +287,17 @@ void Blokus::create_piece() {
     }
   } // end of storing tile indices
 
-  // ADD ERROR CHECKING TO ENSURE THE PIECE HASN'T ALREADY BEEN CREATED.
+  for (auto [key, value] : inventory) {
+    if (same_tile_check(value, t)) {
+      cout << "Tile already in inventory. Tile " << key << "\n";
+      include = false;
+    }
+  }
 
-  inventory.insert({nexttile_id, t});
-  nexttile_id++;
+  if (include) {
+    inventory.insert({nexttile_id, t});
+    nexttile_id++;
+  }
 }
 
 
