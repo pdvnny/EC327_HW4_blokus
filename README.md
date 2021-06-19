@@ -2,8 +2,7 @@
 
 
 ## Contributors
- Parker Dunn (pdunn91@gmail.com | pgdunn@bu.edu | parker_dunn@outlook.com)   
- Additional contributor
+ Parker Dunn (pdunn91@gmail.com | pgdunn@bu.edu | parker_dunn@outlook.com)  
 
 ## Short Description
 An assignment for a software engineering course at Boston University to create a game similar to dominos that our instructor calls "blokus."
