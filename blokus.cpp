@@ -23,7 +23,7 @@ class Tile {
  public:
   int dimension;
   vector<vector<int>> shape;
-  void show() const;  // print out tile in tilebox format - made
+  void show() const;
   void rotate();
   void flipud();
   void fliplr();
@@ -34,41 +34,78 @@ class Tile {
 ///////////////////////////
 
 void Tile::show() const { // print out tile based on it's saved indices
-    
-  // creating a vector of strings for printing
-  string tstr(dimension, '.');
-  vector<string> output(dimension,tstr);
   
-  // modifying the string
-  for (vector<int> coordinate : shape)
-    (output.at(coordinate.at(0))).at(coordinate.at(1)) = '*';
+  if (this == nullptr) {
+    cout << "Exited show tile.\n";
+  } else {
+    // creating a vector of strings for printing
+    string tstr(dimension, '.');
+    vector<string> output(dimension,tstr);
+    
+    // modifying the string
+    for (vector<int> coordinate : shape)
+      (output.at(coordinate.at(0))).at(coordinate.at(1)) = '*';
 
-  // outputing the tile
-  for (string line : output)
-    cout << line << "\n";
+    // outputing the tile
+    for (string line : output)
+      cout << line << "\n";
+  }
 }
 
 void Tile::rotate() {
  
-  // create rotation matrix based on size
+  int lvl = 0, olvl = dimension - 1, counter = (this->shape).size();
+  vector<vector<int>> cpy_shape = (this->shape);
 
+  while (lvl < olvl and counter > 0) {
 
-  // perform rotation
+    for (int i = 0; i < shape.size(); i++) {
+      if ((cpy_shape.at(i)).at(0) == lvl) { // element in the "top" row
+        int ind = (cpy_shape.at(i)).at(1);
+        ((this->shape).at(i)).at(0) = ind;
+        ((this->shape).at(i)).at(1) = olvl;
+        counter--;
 
+      } else if ((cpy_shape.at(i)).at(0) == olvl) { // element in the "last row"
+        int ind = (cpy_shape.at(i)).at(1);
+        ((this->shape).at(i)).at(0) = ind;
+        ((this->shape).at(i)).at(1) = lvl;
+        counter--;
+
+      } else if ((cpy_shape.at(i)).at(1) == olvl) { // element in the "last column"
+        int ind = (cpy_shape.at(i)).at(0);
+        ((this->shape).at(i)).at(1) = olvl - ind;
+        ((this->shape).at(i)).at(0) = olvl;
+        counter--;
+
+      } else if ((cpy_shape.at(i)).at(1) == lvl) { // element in "first" column"
+        int ind = (cpy_shape.at(i)).at(0);
+        ((this->shape).at(i)).at(1) = olvl - ind;
+        ((this->shape).at(i)).at(0) = lvl;
+        counter--;
+      }
+    }
+    lvl++;
+    olvl--;
+  }
 }
 
 
 void Tile::flipud() {
   int e = dimension - 1;
-  for (vector<int> coord : shape)
-    coord.at(0) = e - coord.at(0);
+  for (int i = 0; i < shape.size(); i++)
+    ((this->shape).at(i)).at(0) = e - ((this->shape).at(i)).at(0);
 }
 
 void Tile::fliplr() {
   int e = dimension - 1;
-  for (vector<int> coord : shape)
-    coord.at(1) = e - coord.at(1);
+  for (int i = 0; i < shape.size(); i++)
+    ((this->shape).at(i)).at(1) = e - ((this->shape).at(i)).at(1);
 }
+
+/////////////////////////////
+//  Structs and Functions  //
+/////////////////////////////
 
 struct Move {
   char tile_style;
@@ -127,7 +164,7 @@ bool tile_compare (Tile* inv, Tile* t) {
 
   if (count == t_shape.size()) return true;
 
-  cout << "\nReached the end of 'tile_compare' unexpectedly.\n";
+  cout << "\nComparing same size tiles ...\n";
   return false;
 }
 
@@ -163,6 +200,9 @@ bool same_tile_check(Tile inv, Tile t) {
   return false;
 }
 
+///////////////////////////////////////
+//  Blokus class and blokus methods  //
+///////////////////////////////////////
 
 class Blokus {
   // common interface. required.
@@ -204,6 +244,62 @@ void Blokus::show_tiles() const { // goes through map and prints all of inventor
     value.show();
   }
 }
+
+void Blokus::create_piece() {
+  Tile t;
+  string temp_str;
+  bool include = true, valid_dim = true;
+  string size;
+  
+  cin >> size;
+  for (char c : size)
+    if (c < '1' or c > '9') valid_dim = false;
+
+  t.dimension = stoi(size);
+  if (valid_dim) {
+    
+    // add indices to "shape"
+    for (int row = 0; row < t.dimension; row++) {
+      cin >> temp_str;
+      for (int col = 0; col < t.dimension; col++) {
+        if (temp_str.at(col) == '*') (t.shape).push_back({row, col});
+      }
+      for (char c : temp_str) {
+        if (c != '.' and c != '*') {
+          cout << "\nInvalid character entered. Use * and . to create pieces.\n";
+          include = false;
+        }
+      }
+    } // end of storing tile indices
+
+    // Compare indices to old tiles
+    for (auto [key, value] : inventory) {
+      if (same_tile_check(value, t)) {
+        cout << "Tile already in inventory. Tile " << key << "\n";
+        include = false;
+      }
+    }
+
+    if (include) {
+      
+      inventory.insert({nexttile_id, t});
+      nexttile_id++;
+    }
+  }
+}
+
+
+Tile* Blokus::find_tile(TileID findkey) {
+  for (auto [key, value] : inventory) {
+    if (key == findkey) {
+      cout << "Tile: " << key << "\n";
+      return &inventory.at(key);
+    }
+  }
+  cout << "\nTile not found.\n";
+  return nullptr;
+}
+
 
 void Blokus::show_board() const {
   string empty_row(board_dim, '.');
@@ -266,64 +362,6 @@ void Blokus::set_size(int dim) {
       if (index.at(0) >= dim or index.at(1) >= dim) Moves.erase(itr);
   }
 }
-
-
-void Blokus::create_piece() {
-  Tile t;
-  string temp_str;
-  bool include = true, valid_dim = true;
-  int size;
-  
-  cin >> size;
-  for (char c : t.dimension)
-    if (c < '1' or c > '9') valid_dim = false;
-
-  t.dimension = size;
-  if (valid_dim) {
-    
-    // add indices to "shape"
-    for (int row = 0; row < t.dimension; row++) {
-      cin >> temp_str;
-      for (int col = 0; col < t.dimension; col++) {
-        if (temp_str.at(col) == '*') (t.shape).push_back({row, col});
-      }
-      for (char c : temp_str) {
-        if (c != '.' or c != '*') {
-          cout << "\nInvalid character entered. Use * and . to create pieces.\n";
-          include = false;
-        }
-      }
-    } // end of storing tile indices
-
-    // Compare indices to old tiles
-    for (auto [key, value] : inventory) {
-      if (same_tile_check(value, t)) {
-        cout << "Tile already in inventory. Tile " << key << "\n";
-        include = false;
-      }
-    }
-
-    if (include) {
-      
-      inventory.insert({nexttile_id, t});
-      nexttile_id++;
-    }
-  }
-}
-
-
-Tile* Blokus::find_tile(TileID findkey) {
-  for (auto [key, value] : inventory) {
-    if (key == findkey) {
-      cout << "Tile: " << key << "\n";
-      return &inventory.at(key);
-    }
-  }
-  cout << "\nTile not found.\n";
-  return nullptr;
-}
-
-
 
 
 
