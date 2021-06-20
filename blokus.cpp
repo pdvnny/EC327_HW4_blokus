@@ -54,40 +54,32 @@ void Tile::show() const { // print out tile based on it's saved indices
 
 void Tile::rotate() {
  
-  int lvl = 0, olvl = dimension - 1, counter = (this->shape).size();
-  vector<vector<int>> cpy_shape = (this->shape);
+  int lvl = 0, olvl = dimension - 1;
+  vector<vector<int>> new_shape;
 
-  while (lvl < olvl and counter > 0) {
+  while (lvl < olvl) {
+    for (auto itr = (this->shape).begin(); itr != (this->shape).end(); ++itr) {
+      if ((*itr).at(0) == lvl and ((*itr).at(1) <= olvl)) { // element in the "top" row
+        int ind = (*itr).at(1);
+        new_shape.push_back({ind, olvl});
 
-    for (int i = 0; i < shape.size(); i++) {
-      if ((cpy_shape.at(i)).at(0) == lvl) { // element in the "top" row
-        int ind = (cpy_shape.at(i)).at(1);
-        ((this->shape).at(i)).at(0) = ind;
-        ((this->shape).at(i)).at(1) = olvl;
-        counter--;
+      } else if ((*itr).at(0) == olvl and ((*itr).at(1) <= lvl) ) { // element in the "last row"
+        int ind = (*itr).at(1);
+        new_shape.push_back({ind, lvl});
 
-      } else if ((cpy_shape.at(i)).at(0) == olvl) { // element in the "last row"
-        int ind = (cpy_shape.at(i)).at(1);
-        ((this->shape).at(i)).at(0) = ind;
-        ((this->shape).at(i)).at(1) = lvl;
-        counter--;
+      } else if ((*itr).at(1) == olvl and ((*itr).at(0) <= lvl)) { // element in the "last column"
+        int ind = (*itr).at(0);
+        new_shape.push_back({olvl, (olvl-ind)});
 
-      } else if ((cpy_shape.at(i)).at(1) == olvl) { // element in the "last column"
-        int ind = (cpy_shape.at(i)).at(0);
-        ((this->shape).at(i)).at(1) = olvl - ind;
-        ((this->shape).at(i)).at(0) = olvl;
-        counter--;
-
-      } else if ((cpy_shape.at(i)).at(1) == lvl) { // element in "first" column"
-        int ind = (cpy_shape.at(i)).at(0);
-        ((this->shape).at(i)).at(1) = olvl - ind;
-        ((this->shape).at(i)).at(0) = lvl;
-        counter--;
+      } else if ((*itr).at(1) == lvl and and ((*itr).at(0) <= olvl)) { // element in "first" column"
+        int ind = (*itr).at(0);
+        new_shape.push_back({lvl, (olvl-ind)});
       }
     }
     lvl++;
     olvl--;
   }
+  (this->shape) = new_shape;
 }
 
 
@@ -255,9 +247,8 @@ void Blokus::create_piece() {
   for (char c : size)
     if (c < '1' or c > '9') valid_dim = false;
 
-  t.dimension = stoi(size);
   if (valid_dim) {
-    
+    t.dimension = stoi(size);
     // add indices to "shape"
     for (int row = 0; row < t.dimension; row++) {
       cin >> temp_str;
