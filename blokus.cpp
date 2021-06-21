@@ -1,6 +1,5 @@
-// Copyright 2021 Parker Dunn pgdunn@bu.edu 
+// Copyright 2021 Parker Dunn pgdunn@bu.edu
 // (Alternate: pdunn91@gmail.com and parker_dunn@outlook.com)
-
 
 #include <iostream>
 #include <map>
@@ -34,15 +33,14 @@ class Tile {
 //   Tile class methods  //
 ///////////////////////////
 
-void Tile::show() const { // print out tile based on it's saved indices
-  
+void Tile::show() const {
   if (this == nullptr) {
     cout << "Exited show tile.\n";
   } else {
     // creating a vector of strings for printing
     string tstr(dimension, '.');
-    vector<string> output(dimension,tstr);
-    
+    vector<string> output(dimension, tstr);
+
     // modifying the string
     for (vector<int> coordinate : shape)
       (output.at(coordinate.at(0))).at(coordinate.at(1)) = '*';
@@ -54,25 +52,36 @@ void Tile::show() const { // print out tile based on it's saved indices
 }
 
 void Tile::rotate() {
- 
   int lvl = 0, olvl = dimension - 1;
   vector<vector<int>> new_shape;
 
   while (lvl <= olvl) {
     for (auto itr = (this->shape).begin(); itr != (this->shape).end(); ++itr) {
-      if ((*itr).at(0) == lvl and ((*itr).at(1) <= olvl) and ((*itr).at(1) >= lvl)) { // element in the "top" row
+      // element in the "top" row
+      if ((*itr).at(0) == lvl and
+         ((*itr).at(1) <= olvl) and
+         ((*itr).at(1) >= lvl)) {
         int ind = (*itr).at(1);
         new_shape.push_back({ind, olvl});
 
-      } else if ((*itr).at(0) == olvl and ((*itr).at(1) <= olvl) and ((*itr).at(1) >= lvl)) { // element in the "last row"
+      // element in the "last row"
+      } else if ((*itr).at(0) == olvl and
+                 (*itr).at(1) <= olvl and
+                 (*itr).at(1) >= lvl) {
         int ind = (*itr).at(1);
         new_shape.push_back({ind, lvl});
 
-      } else if ((*itr).at(1) == olvl and ((*itr).at(0) <= olvl) and ((*itr).at(0) >= lvl)) { // element in the "last column"
+      // element in the "last column"
+      } else if ((*itr).at(1) == olvl and
+                 (*itr).at(0) <= olvl and
+                 (*itr).at(0) >= lvl) {
         int ind = (*itr).at(0);
         new_shape.push_back({olvl, (olvl-ind)});
 
-      } else if ((*itr).at(1) == lvl and ((*itr).at(0) <= olvl) and ((*itr).at(0) >= lvl)) { // element in "first" column"
+      // element in "first" column"
+      } else if ((*itr).at(1) == lvl and
+                 (*itr).at(0) <= olvl and
+                 (*itr).at(0) >= lvl) {
         int ind = (*itr).at(0);
         new_shape.push_back({lvl, (olvl-ind)});
       }
@@ -115,7 +124,7 @@ struct Move {
 void tile_shift(Tile* t) {
   vector<vector<int>> indices = t->shape;
   int max = 0;
-  
+
   int shift_col = t->dimension - 1;
   for (int i = 0; i < (t->shape).size(); i++)
     if ((indices.at(i)).at(1) < shift_col) shift_col = (indices.at(i)).at(1);
@@ -134,7 +143,7 @@ void tile_shift(Tile* t) {
   t->dimension = max;
 }
 
-bool tile_compare (Tile* inv, Tile* t) {
+bool tile_compare(Tile* inv, Tile* t) {
   vector<vector<int>> inv_shape = inv->shape;
   vector<vector<int>> t_shape = t->shape;
 
@@ -145,7 +154,8 @@ bool tile_compare (Tile* inv, Tile* t) {
   int count = 0;
   for (vector<int> index1 : inv_shape)
     for (vector<int> index2 : t_shape)
-      if (index1.at(0) == index2.at(0) and index1.at(1) == index2.at(1)) count++;
+      if (index1.at(0) == index2.at(0) and index1.at(1) == index2.at(1))
+        count++;
 
   if (count == t_shape.size()) return true;
 
@@ -154,12 +164,11 @@ bool tile_compare (Tile* inv, Tile* t) {
 }
 
 bool same_tile_check(Tile inv, Tile t) {
-
   tile_shift(&inv);
   tile_shift(&t);
 
   if (tile_compare(&inv, &t)) return true;
-  
+
   t.rotate();
   if (tile_compare(&inv, &t)) return true;
   t.rotate();
@@ -189,8 +198,8 @@ class Blokus {
   int move_num;
   int board_dim;
   string tile_style = "*#@ox";
-  
-  map<TileID,Tile> inventory;
+
+  map<TileID, Tile> inventory;
   vector<Move> Moves;
 
   Blokus() {
@@ -199,13 +208,13 @@ class Blokus {
     board_dim = 0;
   }
 
-  Tile* find_tile(TileID);    // made
-  void create_piece();        // made - needs error checking feature
-  void reset();               // made
-  void show_tiles() const;     // made
-  void show_board() const;          // made
-  void play_tile(TileID, int, int); // made
-  void set_size(int);               // made - needs feature to remove tiles when they are off the board
+  Tile* find_tile(TileID);
+  void create_piece();
+  void reset();
+  void show_tiles() const;
+  void show_board() const;
+  void play_tile(TileID, int, int);
+  void set_size(int);
 };
 
 // Structures for Blokus methods
@@ -216,7 +225,8 @@ void Blokus::reset() {
   move_num = 0;
 }
 
-void Blokus::show_tiles() const { // goes through map and prints all of inventory
+// goes through map and prints all of inventory
+void Blokus::show_tiles() const {
   for (auto [key, value] : inventory) {
     cout << "Tile ID: " << key << "\n";
     value.show();
@@ -226,9 +236,10 @@ void Blokus::show_tiles() const { // goes through map and prints all of inventor
 void Blokus::create_piece() {
   Tile t;
   string temp_str;
-  bool include = true, valid_dim = true, valid_char = false, valid_shape = false;
+  bool include = true, valid_dim = true,
+       valid_char = false, valid_shape = false;
   string size;
-  
+
   cin >> size;
   for (char c : size)
     if (c < '1' or c > '9') valid_dim = false;
@@ -238,14 +249,16 @@ void Blokus::create_piece() {
     // add indices to "shape"
     for (int row = 0; row < t.dimension; row++) {
       cin >> temp_str;
-      // CHECK FOR VALID CHARACTERS 
+      // CHECK FOR VALID CHARACTERS
       for (char c : temp_str) {
         if (c != '.' and c != '*') {
-          cout << "\nInvalid character entered. Use * and . to create pieces.\n";
+          cout << "\nInvalid char. Use * and . to create pieces.\n";
           include = false;
         }
-        if (c == '*') valid_char = true;  // just checks if at least one valid piece is entered
+        // now confirm at least one valid char
+        if (c == '*') valid_char = true;
       }
+
       // MUST CHECK FOR VALID ROW LENGTH!
       if (temp_str.size() != t.dimension) {
         include = false;
@@ -256,19 +269,25 @@ void Blokus::create_piece() {
       for (int col = 0; col < t.dimension; col++) {
         if (temp_str.at(col) == '*') (t.shape).push_back({row, col});
       }
-    } // end of storing tile indices
+    }  // end of storing tile indices
 
     // Error checking shape of tile
     if ((t.shape).size() > 1) {
       vector<vector<int>> proximity = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-      for (int k = ((t.shape).size() - 1); k > -1; k--) {            // iterating through all indices - used for adjustment
+
+      // iterating through all indices - used for adjustment
+      for (int k = ((t.shape).size() - 1); k > -1; k--) {
         vector<int> temp = (t.shape).at(k);
-        for (auto coord : t.shape) {                            // iterating through all indices - for comparing
+        // iterating through all indices - for comparing
+        for (auto coord : t.shape) {
           for (auto adj : proximity)
-            if (coord.at(0) == (temp.at(0) + adj.at(0)) and coord.at(1) == (temp.at(1) + adj.at(1))) valid_shape = true;
+            if (coord.at(0) == (temp.at(0) + adj.at(0)) and
+                coord.at(1) == (temp.at(1) + adj.at(1)))
+              valid_shape = true;
         }
         if (!valid_shape) {
-          cout << "Invalid shape of tile. All tiles must share a side with another tile.\n";
+          cout << "Invalid shape of tile."
+               << " All tiles must share a side with another tile.\n";
           break;
         }
       }
@@ -326,18 +345,19 @@ void Blokus::play_tile(TileID ID, int r, int c) {
 
   if (t_ptr == nullptr) {
     cout << "Exited play command.\n";
-  
+
   } else {
     vector<vector<int>> tile_placement = (t_ptr->shape);
-    
+
     // moves the tile to correct position on board
     int counter = 0;
     for (auto new_coord : tile_placement) {
       tile_placement.at(counter) = {new_coord.at(0) + r, new_coord.at(1) + c};
-      if (new_coord.at(0) >= board_dim or new_coord.at(1) >= board_dim) error = true;
+      if (new_coord.at(0) >= board_dim or new_coord.at(1) >= board_dim)
+        error = true;
       counter++;
     }
-    
+
     if (error) {
       cout << "Cannot place tile on another tile or off the board.\n";
     } else {
@@ -350,23 +370,20 @@ void Blokus::play_tile(TileID ID, int r, int c) {
 
 
 
-
-// Idea: 
-//      (1) might be shorter to copy moves to new variable, 
+// Idea:
+//      (1) might be shorter to copy moves to new variable,
 //      (2) reset moves and board
 //      (3) assign the new board dim
-//      (4) re-assign copied moves that actually fit on the board 
+//      (4) re-assign copied moves that actually fit on the board
 
 void Blokus::set_size(int dim) {
   board_dim = dim;
-  
-  vector<Move>::iterator itr1 = Moves.begin();
 
+  vector<Move>::iterator itr1 = Moves.begin();
   vector<Move> temp_moves = Moves;
   vector<Move>::iterator itr2 = temp_moves.begin();
 
   while (itr1 != Moves.end()) {
-
     auto move_indices = itr2->tile_loc;
     for (auto index : move_indices) {
       if (index.at(0) >= dim or index.at(1) >= dim) {
