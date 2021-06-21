@@ -1,4 +1,5 @@
-// Copyright 2021 Parker Dunn pgdunn@bu.edu (Alternate: pdunn91@gmail.com)
+// Copyright 2021 Parker Dunn pgdunn@bu.edu 
+// (Alternate: pdunn91@gmail.com and parker_dunn@outlook.com)
 
 
 #include <iostream>
