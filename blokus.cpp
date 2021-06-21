@@ -6,6 +6,9 @@
 #include <string>
 #include <vector>
 
+// allowed includes
+// tuple, utility, vector, map, set, unordered_map,
+// unordered_set, algorithm
 
 using std::cin;
 using std::cout;
@@ -31,14 +34,14 @@ class Tile {
 ///////////////////////////
 
 void Tile::show() const { // print out tile based on it's saved indices
-
+  
   if (this == nullptr) {
     cout << "Exited show tile.\n";
   } else {
     // creating a vector of strings for printing
     string tstr(dimension, '.');
-    vector<string> output(dimension, tstr);
-
+    vector<string> output(dimension,tstr);
+    
     // modifying the string
     for (vector<int> coordinate : shape)
       (output.at(coordinate.at(0))).at(coordinate.at(1)) = '*';
@@ -50,7 +53,7 @@ void Tile::show() const { // print out tile based on it's saved indices
 }
 
 void Tile::rotate() {
-
+ 
   int lvl = 0, olvl = dimension - 1;
   vector<vector<int>> new_shape;
 
@@ -66,11 +69,11 @@ void Tile::rotate() {
 
       } else if ((*itr).at(1) == olvl and ((*itr).at(0) <= olvl) and ((*itr).at(0) >= lvl)) { // element in the "last column"
         int ind = (*itr).at(0);
-        new_shape.push_back({olvl, (olvl - ind)});
+        new_shape.push_back({olvl, (olvl-ind)});
 
       } else if ((*itr).at(1) == lvl and ((*itr).at(0) <= olvl) and ((*itr).at(0) >= lvl)) { // element in "first" column"
         int ind = (*itr).at(0);
-        new_shape.push_back({lvl, (olvl - ind)});
+        new_shape.push_back({lvl, (olvl-ind)});
       }
     }
     lvl++;
@@ -78,7 +81,6 @@ void Tile::rotate() {
   }
   (this->shape) = new_shape;
 }
-
 
 void Tile::flipud() {
   int e = dimension - 1;
@@ -109,35 +111,23 @@ struct Move {
   }
 };
 
-void check_board_area(int r, int c, vector<vector<int>> compare_coords, bool* error, bool* proximity) {
-  // check if the new coordinate is already filled
-  for (auto coord : compare_coords) {
-    if (coord.at(0) == r and coord.at(1) == c) *error = true;
-
-    // check if there is a neighboring board piece
-    for (int i = -1; i < 2; i++)
-      for (int j = -1; j < 2; j++)
-        if ( (coord.at(0) + i) == r and (coord.at(1) + j) == c ) *proximity = true;
-  }
-}
-
 void tile_shift(Tile* t) {
   vector<vector<int>> indices = t->shape;
   int max = 0;
-
-  int shift_col = t->dimension;
-  for (int i = 0; i < (t->dimension); i++)
+  
+  int shift_col = t->dimension - 1;
+  for (int i = 0; i < (t->shape).size(); i++)
     if ((indices.at(i)).at(1) < shift_col) shift_col = (indices.at(i)).at(1);
 
-  int shift_row = t->dimension;
-  for (int i = 0; i < (t->dimension); i++)
-    if ((indices.at(i)).at(0) < shift_col) shift_row = (indices.at(i)).at(0);
+  int shift_row = t->dimension - 1;
+  for (int i = 0; i < (t->shape).size(); i++)
+    if ((indices.at(i)).at(0) < shift_row) shift_row = (indices.at(i)).at(0);
 
-  for (auto index : t->shape) {
-    index.at(0) -= shift_row;
-    index.at(1) -= shift_col;
-    if (index.at(0) > max) max = index.at(0);
-    if (index.at(1) > max) max = index.at(1);
+  for (int j = 0; j < (t->shape).size(); j++) {
+    ((t->shape).at(j)).at(0) -= shift_row;
+    ((t->shape).at(j)).at(1) -= shift_col;
+    if (((t->shape).at(j)).at(0) > max) max = ((t->shape).at(j)).at(0);
+    if (((t->shape).at(j)).at(1) > max) max = ((t->shape).at(j)).at(1);
   }
 
   t->dimension = max;
@@ -163,33 +153,26 @@ bool tile_compare (Tile* inv, Tile* t) {
 }
 
 bool same_tile_check(Tile inv, Tile t) {
-  bool identical = false;
 
   tile_shift(&inv);
   tile_shift(&t);
 
-  identical = tile_compare(&inv, &t);
-  if (identical) return true;
-
+  if (tile_compare(&inv, &t)) return true;
+  
   t.rotate();
-  identical = tile_compare(&inv, &t);
-  if (identical) return true;
+  if (tile_compare(&inv, &t)) return true;
   t.rotate();
-  identical = tile_compare(&inv, &t);
-  if (identical) return true;
+  if (tile_compare(&inv, &t)) return true;
   t.rotate();
-  identical = tile_compare(&inv, &t);
-  if (identical) return true;
+  if (tile_compare(&inv, &t)) return true;
   t.rotate();
 
   t.fliplr();
-  identical = tile_compare(&inv, &t);
-  if (identical) return true;
+  if (tile_compare(&inv, &t)) return true;
   t.fliplr();
 
   t.flipud();
-  identical = tile_compare(&inv, &t);
-  if (identical) return true;
+  if (tile_compare(&inv, &t)) return true;
 
   return false;
 }
@@ -205,8 +188,8 @@ class Blokus {
   int move_num;
   int board_dim;
   string tile_style = "*#@ox";
-
-  map<TileID, Tile> inventory;
+  
+  map<TileID,Tile> inventory;
   vector<Move> Moves;
 
   Blokus() {
@@ -242,9 +225,9 @@ void Blokus::show_tiles() const { // goes through map and prints all of inventor
 void Blokus::create_piece() {
   Tile t;
   string temp_str;
-  bool include = true, valid_dim = true, valid_char = false;
+  bool include = true, valid_dim = true, valid_char = false, valid_shape = false;
   string size;
-
+  
   cin >> size;
   for (char c : size)
     if (c < '1' or c > '9') valid_dim = false;
@@ -254,17 +237,43 @@ void Blokus::create_piece() {
     // add indices to "shape"
     for (int row = 0; row < t.dimension; row++) {
       cin >> temp_str;
-      for (int col = 0; col < t.dimension; col++) {
-        if (temp_str.at(col) == '*') (t.shape).push_back({row, col});
-      }
+      // CHECK FOR VALID CHARACTERS 
       for (char c : temp_str) {
         if (c != '.' and c != '*') {
           cout << "\nInvalid character entered. Use * and . to create pieces.\n";
           include = false;
         }
-        if (c == '*') valid_char = true;
+        if (c == '*') valid_char = true;  // just checks if at least one valid piece is entered
+      }
+      // MUST CHECK FOR VALID ROW LENGTH!
+      if (temp_str.size() != t.dimension) {
+        include = false;
+        cout << "Invalid length of the tile's row.\n";
+        break;
+      }
+      // add index now
+      for (int col = 0; col < t.dimension; col++) {
+        if (temp_str.at(col) == '*') (t.shape).push_back({row, col});
       }
     } // end of storing tile indices
+
+    // Error checking shape of tile
+    if ((t.shape).size() > 1) {
+      vector<vector<int>> proximity = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+      for (int k = ((t.shape).size() - 1); k > -1; k--) {            // iterating through all indices - used for adjustment
+        vector<int> temp = (t.shape).at(k);
+        for (auto coord : t.shape) {                            // iterating through all indices - for comparing
+          for (auto adj : proximity)
+            if (coord.at(0) == (temp.at(0) + adj.at(0)) and coord.at(1) == (temp.at(1) + adj.at(1))) valid_shape = true;
+        }
+        if (!valid_shape) {
+          cout << "Invalid shape of tile. All tiles must share a side with another tile.\n";
+          break;
+        }
+      }
+    } else {
+      valid_shape = true;
+    }
 
     // Compare indices to old tiles
     for (auto [key, value] : inventory) {
@@ -274,7 +283,8 @@ void Blokus::create_piece() {
       }
     }
 
-    if (include and valid_char) {
+    // now tile can be added to inventory
+    if (include and valid_char and valid_shape) {
       inventory.insert({nexttile_id, t});
       nexttile_id++;
     }
@@ -310,32 +320,25 @@ void Blokus::show_board() const {
 
 
 void Blokus::play_tile(TileID ID, int r, int c) {
-
   bool error = false;
-  bool proximity = false;
   Tile* t_ptr = find_tile(ID);
 
   if (t_ptr == nullptr) {
     cout << "Exited play command.\n";
+  
   } else {
     vector<vector<int>> tile_placement = (t_ptr->shape);
-
+    
     // moves the tile to correct position on board
     int counter = 0;
     for (auto new_coord : tile_placement) {
-      new_coord.at(0) += r;
-      new_coord.at(1) += c;
-      tile_placement.at(counter) = {new_coord.at(0), new_coord.at(1)};
-      for (Move played_tile : Moves)
-        check_board_area(new_coord.at(0), new_coord.at(1), played_tile.tile_loc, &error, &proximity);
+      tile_placement.at(counter) = {new_coord.at(0) + r, new_coord.at(1) + c};
       if (new_coord.at(0) >= board_dim or new_coord.at(1) >= board_dim) error = true;
       counter++;
     }
-
+    
     if (error) {
       cout << "Cannot place tile on another tile or off the board.\n";
-    } else if (!proximity and move_num > 0) {
-      cout << "Tile must neighbor another tile.\n";
     } else {
       Move m{ID, move_num, tile_style.at(move_num % 5), tile_placement};
       Moves.push_back(m);
@@ -346,9 +349,16 @@ void Blokus::play_tile(TileID ID, int r, int c) {
 
 
 
+
+// Idea: 
+//      (1) might be shorter to copy moves to new variable, 
+//      (2) reset moves and board
+//      (3) assign the new board dim
+//      (4) re-assign copied moves that actually fit on the board 
+
 void Blokus::set_size(int dim) {
   board_dim = dim;
-
+  
   vector<Move>::iterator itr1 = Moves.begin();
 
   vector<Move> temp_moves = Moves;

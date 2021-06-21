@@ -6,9 +6,6 @@
 #include <string>
 #include <vector>
 
-// allowed includes
-// tuple, utility, vector, map, set, unordered_map,
-// unordered_set, algorithm
 
 using std::cin;
 using std::cout;
@@ -34,14 +31,14 @@ class Tile {
 ///////////////////////////
 
 void Tile::show() const { // print out tile based on it's saved indices
-  
+
   if (this == nullptr) {
     cout << "Exited show tile.\n";
   } else {
     // creating a vector of strings for printing
     string tstr(dimension, '.');
-    vector<string> output(dimension,tstr);
-    
+    vector<string> output(dimension, tstr);
+
     // modifying the string
     for (vector<int> coordinate : shape)
       (output.at(coordinate.at(0))).at(coordinate.at(1)) = '*';
@@ -53,7 +50,7 @@ void Tile::show() const { // print out tile based on it's saved indices
 }
 
 void Tile::rotate() {
- 
+
   int lvl = 0, olvl = dimension - 1;
   vector<vector<int>> new_shape;
 
@@ -69,11 +66,11 @@ void Tile::rotate() {
 
       } else if ((*itr).at(1) == olvl and ((*itr).at(0) <= olvl) and ((*itr).at(0) >= lvl)) { // element in the "last column"
         int ind = (*itr).at(0);
-        new_shape.push_back({olvl, (olvl-ind)});
+        new_shape.push_back({olvl, (olvl - ind)});
 
       } else if ((*itr).at(1) == lvl and ((*itr).at(0) <= olvl) and ((*itr).at(0) >= lvl)) { // element in "first" column"
         int ind = (*itr).at(0);
-        new_shape.push_back({lvl, (olvl-ind)});
+        new_shape.push_back({lvl, (olvl - ind)});
       }
     }
     lvl++;
@@ -127,13 +124,13 @@ void check_board_area(int r, int c, vector<vector<int>> compare_coords, bool* er
 void tile_shift(Tile* t) {
   vector<vector<int>> indices = t->shape;
   int max = 0;
-  
+
   int shift_col = t->dimension;
   for (int i = 0; i < (t->dimension); i++)
     if ((indices.at(i)).at(1) < shift_col) shift_col = (indices.at(i)).at(1);
 
   int shift_row = t->dimension;
-    for (int i = 0; i < (t->dimension); i++)
+  for (int i = 0; i < (t->dimension); i++)
     if ((indices.at(i)).at(0) < shift_col) shift_row = (indices.at(i)).at(0);
 
   for (auto index : t->shape) {
@@ -173,7 +170,7 @@ bool same_tile_check(Tile inv, Tile t) {
 
   identical = tile_compare(&inv, &t);
   if (identical) return true;
-  
+
   t.rotate();
   identical = tile_compare(&inv, &t);
   if (identical) return true;
@@ -208,8 +205,8 @@ class Blokus {
   int move_num;
   int board_dim;
   string tile_style = "*#@ox";
-  
-  map<TileID,Tile> inventory;
+
+  map<TileID, Tile> inventory;
   vector<Move> Moves;
 
   Blokus() {
@@ -247,7 +244,7 @@ void Blokus::create_piece() {
   string temp_str;
   bool include = true, valid_dim = true, valid_char = false;
   string size;
-  
+
   cin >> size;
   for (char c : size)
     if (c < '1' or c > '9') valid_dim = false;
@@ -274,20 +271,6 @@ void Blokus::create_piece() {
       if (same_tile_check(value, t)) {
         cout << "Tile already in inventory. Tile " << key << "\n";
         include = false;
-      }
-    }
-
-    vector<vector<int>> shape_temp = t.shape;
-    for (int k = shape_temp.size(); k > -1; k--) {
-
-      vector<int> temp = shape_temp.at(k);
-      shape_temp.pop_back();
-
-      for (auto coord : t.shape) {
-        // check if there is a neighboring board piece
-        for (int i = -1; i < 2; i+=2)
-          for (int j = -1; j < 2; j+=2)
-            if (coord.at(0)  + temp.at(0))
       }
     }
 
@@ -336,7 +319,7 @@ void Blokus::play_tile(TileID ID, int r, int c) {
     cout << "Exited play command.\n";
   } else {
     vector<vector<int>> tile_placement = (t_ptr->shape);
-    
+
     // moves the tile to correct position on board
     int counter = 0;
     for (auto new_coord : tile_placement) {
@@ -348,7 +331,7 @@ void Blokus::play_tile(TileID ID, int r, int c) {
       if (new_coord.at(0) >= board_dim or new_coord.at(1) >= board_dim) error = true;
       counter++;
     }
-    
+
     if (error) {
       cout << "Cannot place tile on another tile or off the board.\n";
     } else if (!proximity and move_num > 0) {
@@ -365,7 +348,7 @@ void Blokus::play_tile(TileID ID, int r, int c) {
 
 void Blokus::set_size(int dim) {
   board_dim = dim;
-  
+
   vector<Move>::iterator itr1 = Moves.begin();
 
   vector<Move> temp_moves = Moves;
