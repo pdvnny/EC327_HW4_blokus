@@ -225,8 +225,9 @@ void Blokus::reset() {
 
 // goes through map and prints all of inventory
 void Blokus::show_tiles() const {
+  cout << "tile inventory\n";
   for (auto [key, value] : inventory) {
-    cout << "Tile ID: " << key << "\n";
+    cout << key << "\n";
     value.show();
   }
 }
@@ -250,7 +251,6 @@ void Blokus::create_piece() {
       // CHECK FOR VALID CHARACTERS
       for (char c : temp_str) {
         if (c != '.' and c != '*') {
-          cout << "\nInvalid char. Use * and . to create pieces.\n";
           include = false;
         }
         // now confirm at least one valid char
@@ -260,7 +260,6 @@ void Blokus::create_piece() {
       // MUST CHECK FOR VALID ROW LENGTH!
       if (temp_str.size() != t.dimension) {
         include = false;
-        cout << "Invalid length of the tile's row.\n";
         break;
       }
       // add index now
@@ -283,20 +282,17 @@ void Blokus::create_piece() {
                 coord.at(1) == (temp.at(1) + adj.at(1)))
               valid_shape = true;
         }
-        if (!valid_shape) {
-          cout << "Invalid shape of tile."
-               << " All tiles must share a side with another tile.\n";
-          break;
-        }
       }
     } else {
       valid_shape = true;
     }
+    // needed a print out when shape or char is invalid
+    if (!valid_shape or !include) cout << "invalid tile\n";
 
     // Compare indices to old tiles
     for (auto [key, value] : inventory) {
       if (same_tile_check(value, t)) {
-        cout << "Tile already in inventory. Tile " << key << "\n";
+        cout << "discarded copy of tile " << key << "\n";
         include = false;
       }
     }
@@ -304,6 +300,7 @@ void Blokus::create_piece() {
     // now tile can be added to inventory
     if (include and valid_char and valid_shape) {
       inventory.insert({nexttile_id, t});
+      cout << "created tile " << nexttile_id << "\n";
       nexttile_id++;
     }
   }
@@ -313,7 +310,7 @@ void Blokus::create_piece() {
 Tile* Blokus::find_tile(TileID findkey) {
   for (auto [key, value] : inventory) {
     if (key == findkey) {
-      cout << "Tile: " << key << "\n";
+      cout << key << "\n";
       return &inventory.at(key);
     }
   }
