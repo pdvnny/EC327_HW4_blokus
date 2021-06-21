@@ -59,31 +59,31 @@ void Tile::rotate() {
     for (auto itr = (this->shape).begin(); itr != (this->shape).end(); ++itr) {
       // element in the "top" row
       if ((*itr).at(0) == lvl and
-         ((*itr).at(1) <= olvl) and
-         ((*itr).at(1) >= lvl)) {
+          ((*itr).at(1) <= olvl) and
+          ((*itr).at(1) >= lvl)) {
         int ind = (*itr).at(1);
         new_shape.push_back({ind, olvl});
 
-      // element in the "last row"
+        // element in the "last row"
       } else if ((*itr).at(0) == olvl and
                  (*itr).at(1) <= olvl and
                  (*itr).at(1) >= lvl) {
         int ind = (*itr).at(1);
         new_shape.push_back({ind, lvl});
 
-      // element in the "last column"
+        // element in the "last column"
       } else if ((*itr).at(1) == olvl and
                  (*itr).at(0) <= olvl and
                  (*itr).at(0) >= lvl) {
         int ind = (*itr).at(0);
-        new_shape.push_back({olvl, (olvl-ind)});
+        new_shape.push_back({olvl, (olvl - ind)});
 
-      // element in "first" column"
+        // element in "first" column"
       } else if ((*itr).at(1) == lvl and
                  (*itr).at(0) <= olvl and
                  (*itr).at(0) >= lvl) {
         int ind = (*itr).at(0);
-        new_shape.push_back({lvl, (olvl-ind)});
+        new_shape.push_back({lvl, (olvl - ind)});
       }
     }
     lvl++;
@@ -158,8 +158,6 @@ bool tile_compare(Tile* inv, Tile* t) {
         count++;
 
   if (count == t_shape.size()) return true;
-
-  cout << "\nComparing same size tiles ...\n";
   return false;
 }
 
