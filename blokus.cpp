@@ -162,9 +162,6 @@ bool tile_compare(Tile* inv, Tile* t) {
 }
 
 bool same_tile_check(Tile inv, Tile t) {
-  tile_shift(&inv);
-  tile_shift(&t);
-
   if (tile_compare(&inv, &t)) return true;
 
   t.rotate();
@@ -237,6 +234,7 @@ void Blokus::create_piece() {
   string temp_str;
   bool include = true, valid_dim = true,
        valid_char = false, valid_shape = false;
+  int valid_indices;
   string size;
 
   cin >> size;
@@ -268,26 +266,30 @@ void Blokus::create_piece() {
       }
     }  // end of storing tile indices
 
-    // Error checking shape of tile
+    // Block checks if tile shape is invalid
     if ((t.shape).size() > 1) {
       vector<vector<int>> proximity = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-
-      // iterating through all indices - used for adjustment
-      for (int k = ((t.shape).size() - 1); k > -1; k--) {
+      for (int k = 0; k < (t.shape).size(); k++) {
         vector<int> temp = (t.shape).at(k);
         // iterating through all indices - for comparing
         for (auto coord : t.shape) {
-          for (auto adj : proximity)
-            if (coord.at(0) == (temp.at(0) + adj.at(0)) and
-                coord.at(1) == (temp.at(1) + adj.at(1)))
-              valid_shape = true;
+          for (auto adj : proximity) {
+            if ((temp.at(0) + adj.at(0) == coord.at(0)) and (temp.at(1) + adj.at(1) == coord.at(1))) {
+              valid_indices++;
+              break;
+            }
+          if (valid_indices > k) break;
+          }
         }
       }
     } else {
       valid_shape = true;
     }
+    if (valid_shape or (valid_indices == (t.shape).size()))
+      valid_shape = true;
+
     // needed a print out when shape or char is invalid
-    if (!valid_shape or !include) cout << "invalid tile\n";
+    if (!valid_shape or !include or !valid_char) cout << "invalid tile\n";
 
     // Compare indices to old tiles
     for (auto [key, value] : inventory) {
@@ -299,6 +301,7 @@ void Blokus::create_piece() {
 
     // now tile can be added to inventory
     if (include and valid_char and valid_shape) {
+      tile_shift(&t);
       inventory.insert({nexttile_id, t});
       cout << "created tile " << nexttile_id << "\n";
       nexttile_id++;
