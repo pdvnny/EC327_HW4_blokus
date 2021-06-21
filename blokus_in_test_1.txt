@@ -6,3 +6,8 @@ create 3
 *..
 *..
 show tiles
+play 100 0 0
+rotate 101
+play 101 0 2
+resize 4
+quit
