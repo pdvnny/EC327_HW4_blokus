@@ -76,14 +76,14 @@ void Tile::rotate() {
                  (*itr).at(0) <= olvl and
                  (*itr).at(0) >= lvl) {
         int ind = (*itr).at(0);
-        new_shape.push_back({olvl, (olvl - ind)});
+        new_shape.push_back({olvl, (lvl + olvl - ind)});
 
         // element in "first" column"
       } else if ((*itr).at(1) == lvl and
                  (*itr).at(0) <= olvl and
                  (*itr).at(0) >= lvl) {
         int ind = (*itr).at(0);
-        new_shape.push_back({lvl, (olvl - ind)});
+        new_shape.push_back({lvl, (olvl + lvl - ind)});
       }
     }
     lvl++;
@@ -197,8 +197,6 @@ bool same_tile_check(Tile inv, Tile t2) {
 
   t2.fliplr();
   t2.flipud();
-  t2.show();
-  inv.show();
   if (tile_compare(&inv, &t2)) identical = true;
   t2.fliplr();
   t2.flipud();
