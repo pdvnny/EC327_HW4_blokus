@@ -122,7 +122,7 @@ struct Move {
 };
 
 void tile_shift(Tile* t) {
-  vector<vector<int>> indices = t->shape;
+  vector<vector<int>> indices = (t->shape);
   int max = 0;
 
   int shift_col = t->dimension - 1;
@@ -140,7 +140,7 @@ void tile_shift(Tile* t) {
     if (((t->shape).at(j)).at(1) > max) max = ((t->shape).at(j)).at(1);
   }
 
-  t->dimension = max;
+  t->dimension = (max+1);
 }
 
 bool tile_compare(Tile* inv, Tile* t) {
@@ -174,10 +174,37 @@ bool same_tile_check(Tile inv, Tile t) {
 
   t.fliplr();
   if (tile_compare(&inv, &t)) return true;
+  t.rotate();
+  if (tile_compare(&inv, &t)) return true;
+  t.flipud();
+  if (tile_compare(&inv, &t)) return true;
+  t.flipud();
+  t.rotate();
+  if (tile_compare(&inv, &t)) return true;
+  t.rotate();
+  if (tile_compare(&inv, &t)) return true;
+  t.rotate();
   t.fliplr();
 
   t.flipud();
   if (tile_compare(&inv, &t)) return true;
+  t.rotate();
+  if (tile_compare(&inv, &t)) return true;
+  t.fliplr();
+  if (tile_compare(&inv, &t)) return true;
+  t.fliplr();
+  t.rotate();
+  if (tile_compare(&inv, &t)) return true;
+  t.rotate();
+  if (tile_compare(&inv, &t)) return true;
+  t.rotate();
+  t.flipud();
+  
+  t.fliplr();
+  t.flipud();
+  if (tile_compare(&inv, &t)) return true;
+  t.fliplr();
+  t.flipud();
 
   return false;
 }
@@ -192,7 +219,6 @@ class Blokus {
   TileID nexttile_id;
   int move_num;
   int board_dim;
-  string tile_style = "*#@ox";
 
   map<TileID, Tile> inventory;
   vector<Move> Moves;
@@ -217,6 +243,7 @@ class Blokus {
 void Blokus::reset() {
   board_dim = 0;
   Moves.clear();
+  inventory.clear();
   move_num = 0;
 }
 
@@ -234,7 +261,7 @@ void Blokus::create_piece() {
   string temp_str;
   bool include = true, valid_dim = true,
        valid_char = false, valid_shape = false;
-  int valid_indices;
+  int valid_indices = 0;
   string size;
 
   cin >> size;
@@ -271,27 +298,35 @@ void Blokus::create_piece() {
       vector<vector<int>> proximity = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
       for (int k = 0; k < (t.shape).size(); k++) {
         vector<int> temp = (t.shape).at(k);
+        
         // iterating through all indices - for comparing
-        for (auto coord : t.shape) {
+        int counter = 0;
+        while (counter < (t.shape).size()) {
+          vector<int> coord = (t.shape).at(counter);
           for (auto adj : proximity) {
             if ((temp.at(0) + adj.at(0) == coord.at(0)) and (temp.at(1) + adj.at(1) == coord.at(1))) {
               valid_indices++;
               break;
             }
-          if (valid_indices > k) break;
           }
+          if (valid_indices > k) {
+            break;
+          } else if (valid_indices < k) {
+            valid_shape = false;
+            break;
+          } else {counter++;}
         }
       }
+      if (valid_indices == (t.shape).size()) valid_shape = true;
     } else {
       valid_shape = true;
     }
-    if (valid_shape or (valid_indices == (t.shape).size()))
-      valid_shape = true;
 
     // needed a print out when shape or char is invalid
     if (!valid_shape or !include or !valid_char) cout << "invalid tile\n";
 
     // Compare indices to old tiles
+    tile_shift(&t);
     for (auto [key, value] : inventory) {
       if (same_tile_check(value, t)) {
         cout << "discarded copy of tile " << key << "\n";
@@ -301,7 +336,6 @@ void Blokus::create_piece() {
 
     // now tile can be added to inventory
     if (include and valid_char and valid_shape) {
-      tile_shift(&t);
       inventory.insert({nexttile_id, t});
       cout << "created tile " << nexttile_id << "\n";
       nexttile_id++;
@@ -339,7 +373,18 @@ void Blokus::show_board() const {
 
 void Blokus::play_tile(TileID ID, int r, int c) {
   bool error = false;
-  Tile* t_ptr = find_tile(ID);
+  Tile* t_ptr;
+
+  int count = 0;
+  for (auto [key, value] : inventory) {
+    if (key == ID) {
+      t_ptr = &inventory.at(key);
+      break;
+    } else if (count == inventory.size()) {
+      t_ptr = nullptr;
+    }
+    count++;
+  }
 
   if (t_ptr == nullptr) {
     cout << "Exited play command.\n";
@@ -357,22 +402,16 @@ void Blokus::play_tile(TileID ID, int r, int c) {
     }
 
     if (error) {
-      cout << "Cannot place tile on another tile or off the board.\n";
+      cout << "Cannot place tile.\n";
     } else {
-      Move m{ID, move_num, tile_style.at(move_num % 5), tile_placement};
+      Move m{ID, move_num, '*', tile_placement};
       Moves.push_back(m);
+      cout << "played " << ID << "\n";
       move_num++;
     }   // end of "secondary else"
   }   // end of "main else"
 }   // end of method - entirely controlled by one if-else
 
-
-
-// Idea:
-//      (1) might be shorter to copy moves to new variable,
-//      (2) reset moves and board
-//      (3) assign the new board dim
-//      (4) re-assign copied moves that actually fit on the board
 
 void Blokus::set_size(int dim) {
   board_dim = dim;
@@ -395,7 +434,6 @@ void Blokus::set_size(int dim) {
 
   Moves = temp_moves;
 }
-
 
 
 // MAIN. Do not change the below.
@@ -464,3 +502,11 @@ int main() {
   cout << "Goodbye\n";
   return 0;
 }
+
+
+
+// Idea:
+//      (1) might be shorter to copy moves to new variable,
+//      (2) reset moves and board
+//      (3) assign the new board dim
+//      (4) re-assign copied moves that actually fit on the board
