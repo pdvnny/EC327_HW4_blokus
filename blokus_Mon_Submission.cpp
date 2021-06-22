@@ -251,97 +251,101 @@ void Blokus::show_tiles() const {
   }
 }
 
-
 void Blokus::create_piece() {
   Tile t;
   string temp_str;
-  bool include = true, valid_char = false, valid_shape = false;
+  bool include = true, valid_dim = true,
+       valid_char = false, valid_shape = false;
   int valid_indices = 0;
   string size;
 
   cin >> size;
-  t.dimension = stoi(size);
-  // add indices to "shape"
-  for (int row = 0; row < t.dimension; row++) {
-    cin >> temp_str;
-    // CHECK FOR VALID CHARACTERS
-    for (char c : temp_str) {
-      if (c != '.' and c != '*') include = false;
-      // now confirm at least one valid char
-      if (c == '*') valid_char = true;
-    }
+  for (char c : size)
+    if (c < '1' or c > '9') valid_dim = false;
 
-    // MUST CHECK FOR VALID ROW LENGTH!
-    if (temp_str.size() != t.dimension) {
-      include = false;
-      break;
-    }
-    // add index now
-    for (int col = 0; col < t.dimension; col++) {
-      if (temp_str.at(col) == '*') (t.shape).push_back({row, col});
-    }
-  }  // end of storing tile indices
+  if (valid_dim) {
+    t.dimension = stoi(size);
+    // add indices to "shape"
+    for (int row = 0; row < t.dimension; row++) {
+      cin >> temp_str;
+      // CHECK FOR VALID CHARACTERS
+      for (char c : temp_str) {
+        if (c != '.' and c != '*') {
+          include = false;
+        }
+        // now confirm at least one valid char
+        if (c == '*') valid_char = true;
+      }
 
-// REMAKE THIS SECTION
-  // Block checks if tile shape is invalid
-  if ((t.shape).size() > 1) {
-    vector<vector<int>> proximity = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-    for (int k = 0; k < (t.shape).size(); k++) {
-      vector<int> temp = (t.shape).at(k);
+      // MUST CHECK FOR VALID ROW LENGTH!
+      if (temp_str.size() != t.dimension) {
+        include = false;
+        break;
+      }
+      // add index now
+      for (int col = 0; col < t.dimension; col++) {
+        if (temp_str.at(col) == '*') (t.shape).push_back({row, col});
+      }
+    }  // end of storing tile indices
 
-      // iterating through all indices - for comparing
-      int counter = 0;
-      while (counter < (t.shape).size()) {
-        vector<int> coord = (t.shape).at(counter);
-        for (auto adj : proximity) {
-          if ((temp.at(0) + adj.at(0) == coord.at(0)) and
-             (temp.at(1) + adj.at(1) == coord.at(1))) {
-            valid_indices++;
+    // Block checks if tile shape is invalid
+    if ((t.shape).size() > 1) {
+      vector<vector<int>> proximity = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
+      for (int k = 0; k < (t.shape).size(); k++) {
+        vector<int> temp = (t.shape).at(k);
+
+        // iterating through all indices - for comparing
+        int counter = 0;
+        while (counter < (t.shape).size()) {
+          vector<int> coord = (t.shape).at(counter);
+          for (auto adj : proximity) {
+            if ((temp.at(0) + adj.at(0) == coord.at(0)) and
+               (temp.at(1) + adj.at(1) == coord.at(1))) {
+              valid_indices++;
+              break;
+            }
+          }
+          if (valid_indices > k) {
             break;
+          } else if (valid_indices < k) {
+            valid_shape = false;
+            break;
+          } else {
+            counter++;
           }
         }
-        if (valid_indices > k+1) {
-          break;
-        } else if (valid_indices < k) {
-          valid_shape = false;
-          break;
-        } else {
-          counter++;
-        }
+      }
+      if (valid_indices == (t.shape).size()) valid_shape = true;
+    } else {
+      valid_shape = true;
+    }
+
+    // needed a print out when shape or char is invalid
+    if (!valid_shape or !include or !valid_char) cout << "invalid tile\n";
+
+    // Compare indices to old tiles
+    tile_shift(&t);
+    for (auto [key, value] : inventory) {
+      if (same_tile_check(value, t)) {
+        cout << "discarded copy of tile " << key << "\n";
+        include = false;
       }
     }
-    if (valid_indices == (t.shape).size()) valid_shape = true;
-  } else {
-    valid_shape = true;
-  }
-// END OF REMAKE
 
-  // needed a print out when shape or char is invalid
-  if (!valid_shape or !include or !valid_char) cout << "invalid tile\n";
-
-  // Compare indices to old tiles
-  tile_shift(&t);
-  for (auto [key, value] : inventory) {
-    if (same_tile_check(value, t)) {
-      cout << "discarded copy of tile " << key << "\n";
-      include = false;
+    // now tile can be added to inventory
+    if (include and valid_char and valid_shape) {
+      inventory.insert({nexttile_id, t});
+      cout << "created tile " << nexttile_id << "\n";
+      nexttile_id++;
     }
   }
-
-  // now tile can be added to inventory
-  if (include and valid_char and valid_shape) {
-    inventory.insert({nexttile_id, t});
-    cout << "created tile " << nexttile_id << "\n";
-    nexttile_id++;
-  }
 }
-
 
 
 Tile* Blokus::find_tile(TileID findkey) {
   for (auto [key, value] : inventory) {
     if (key == findkey) {
-      //  cout << key << "\n";
+      cout << key << "\n";
       return &inventory.at(key);
     }
   }
