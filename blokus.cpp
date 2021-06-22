@@ -76,14 +76,14 @@ void Tile::rotate() {
                  (*itr).at(0) <= olvl and
                  (*itr).at(0) >= lvl) {
         int ind = (*itr).at(0);
-        new_shape.push_back({olvl, (olvl - ind)});
+        new_shape.push_back({olvl, (olvl - ind + 1)});
 
         // element in "first" column"
       } else if ((*itr).at(1) == lvl and
                  (*itr).at(0) <= olvl and
                  (*itr).at(0) >= lvl) {
         int ind = (*itr).at(0);
-        new_shape.push_back({lvl, (olvl - ind)});
+        new_shape.push_back({lvl, (olvl - ind + 1)});
       }
     }
     lvl++;
@@ -140,7 +140,7 @@ void tile_shift(Tile* t) {
     if (((t->shape).at(j)).at(1) > max) max = ((t->shape).at(j)).at(1);
   }
 
-  t->dimension = (max+1);
+  t->dimension = (max + 1);
 }
 
 bool tile_compare(Tile* inv, Tile* t) {
@@ -161,52 +161,49 @@ bool tile_compare(Tile* inv, Tile* t) {
   return false;
 }
 
-bool same_tile_check(Tile inv, Tile t) {
-  if (tile_compare(&inv, &t)) return true;
+bool same_tile_check(Tile inv, Tile t2) {
+  bool identical = false;
 
-  t.rotate();
-  if (tile_compare(&inv, &t)) return true;
-  t.rotate();
-  if (tile_compare(&inv, &t)) return true;
-  t.rotate();
-  if (tile_compare(&inv, &t)) return true;
-  t.rotate();
+  if (tile_compare(&inv, &t2)) identical = true;
+  t2.rotate();
+  if (tile_compare(&inv, &t2)) identical = true;
+  t2.rotate();
+  if (tile_compare(&inv, &t2)) identical = true;
+  t2.rotate();
+  if (tile_compare(&inv, &t2)) identical = true;
+  t2.rotate();
 
-  t.fliplr();
-  if (tile_compare(&inv, &t)) return true;
-  t.rotate();
-  if (tile_compare(&inv, &t)) return true;
-  t.flipud();
-  if (tile_compare(&inv, &t)) return true;
-  t.flipud();
-  t.rotate();
-  if (tile_compare(&inv, &t)) return true;
-  t.rotate();
-  if (tile_compare(&inv, &t)) return true;
-  t.rotate();
-  t.fliplr();
+  t2.fliplr();
+  if (tile_compare(&inv, &t2)) identical = true;
+  t2.rotate();
+  if (tile_compare(&inv, &t2)) identical = true;
+  t2.rotate();
+  if (tile_compare(&inv, &t2)) identical = true;
+  t2.rotate();
+  if (tile_compare(&inv, &t2)) identical = true;
+  t2.rotate();
+  t2.fliplr();
 
-  t.flipud();
-  if (tile_compare(&inv, &t)) return true;
-  t.rotate();
-  if (tile_compare(&inv, &t)) return true;
-  t.fliplr();
-  if (tile_compare(&inv, &t)) return true;
-  t.fliplr();
-  t.rotate();
-  if (tile_compare(&inv, &t)) return true;
-  t.rotate();
-  if (tile_compare(&inv, &t)) return true;
-  t.rotate();
-  t.flipud();
-  
-  t.fliplr();
-  t.flipud();
-  if (tile_compare(&inv, &t)) return true;
-  t.fliplr();
-  t.flipud();
+  t2.flipud();
+  if (tile_compare(&inv, &t2)) identical = true;
+  t2.rotate();
+  if (tile_compare(&inv, &t2)) identical = true;
+  t2.rotate();
+  if (tile_compare(&inv, &t2)) identical = true;
+  t2.rotate();
+  if (tile_compare(&inv, &t2)) identical = true;
+  t2.rotate();
+  t2.flipud();
 
-  return false;
+  t2.fliplr();
+  t2.flipud();
+  t2.show();
+  inv.show();
+  if (tile_compare(&inv, &t2)) identical = true;
+  t2.fliplr();
+  t2.flipud();
+
+  return identical;
 }
 
 ///////////////////////////////////////
@@ -298,13 +295,14 @@ void Blokus::create_piece() {
       vector<vector<int>> proximity = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
       for (int k = 0; k < (t.shape).size(); k++) {
         vector<int> temp = (t.shape).at(k);
-        
+
         // iterating through all indices - for comparing
         int counter = 0;
         while (counter < (t.shape).size()) {
           vector<int> coord = (t.shape).at(counter);
           for (auto adj : proximity) {
-            if ((temp.at(0) + adj.at(0) == coord.at(0)) and (temp.at(1) + adj.at(1) == coord.at(1))) {
+            if ((temp.at(0) + adj.at(0) == coord.at(0)) and
+               (temp.at(1) + adj.at(1) == coord.at(1))) {
               valid_indices++;
               break;
             }
@@ -314,7 +312,9 @@ void Blokus::create_piece() {
           } else if (valid_indices < k) {
             valid_shape = false;
             break;
-          } else {counter++;}
+          } else {
+            counter++;
+          }
         }
       }
       if (valid_indices == (t.shape).size()) valid_shape = true;
@@ -502,11 +502,3 @@ int main() {
   cout << "Goodbye\n";
   return 0;
 }
-
-
-
-// Idea:
-//      (1) might be shorter to copy moves to new variable,
-//      (2) reset moves and board
-//      (3) assign the new board dim
-//      (4) re-assign copied moves that actually fit on the board
