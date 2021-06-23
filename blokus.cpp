@@ -23,6 +23,7 @@ class Tile {
  public:
   int dimension;
   vector<vector<int>> shape;
+  vector<string> rows;
   void show() const;
   void rotate();
   void flipud();
@@ -255,7 +256,7 @@ void Blokus::show_tiles() const {
 void Blokus::create_piece() {
   Tile t;
   string temp_str;
-  bool include = true, valid_char = false, valid_shape = false;
+  bool include = true, valid_char = false, valid_shape = true;
   int valid_indices = 0;
   string size;
 
@@ -266,55 +267,43 @@ void Blokus::create_piece() {
     cin >> temp_str;
     // CHECK FOR VALID CHARACTERS
     for (char c : temp_str) {
-      if (c != '.' and c != '*') include = false;
-      // now confirm at least one valid char
-      if (c == '*') valid_char = true;
+      if (c != '.' and c != '*') include = false;  // only * and .
+      if (c == '*') valid_char = true;           // at least one *
     }
+    // CHECK FOR VALID ROW LENGTH!
+    if (temp_str.size() != t.dimension) include = false;
 
-    // MUST CHECK FOR VALID ROW LENGTH!
-    if (temp_str.size() != t.dimension) {
-      include = false;
-      break;
-    }
-    // add index now
+    // save cin (i.e. temp_str)
+    (t.rows).push_back(temp_str);
     for (int col = 0; col < t.dimension; col++) {
-      if (temp_str.at(col) == '*') (t.shape).push_back({row, col});
+      if (temp_str.at(col) == '*')
+        (t.shape).push_back({row, col});
     }
   }  // end of storing tile indices
 
-// REMAKE THIS SECTION
-  // Block checks if tile shape is invalid
-  if ((t.shape).size() > 1) {
-    vector<vector<int>> proximity = {{-1, 0}, {1, 0}, {0, -1}, {0, 1}};
-    for (int k = 0; k < (t.shape).size(); k++) {
-      vector<int> temp = (t.shape).at(k);
-
-      // iterating through all indices - for comparing
-      int counter = 0;
-      while (counter < (t.shape).size()) {
-        vector<int> coord = (t.shape).at(counter);
-        for (auto adj : proximity) {
-          if ((temp.at(0) + adj.at(0) == coord.at(0)) and
-             (temp.at(1) + adj.at(1) == coord.at(1))) {
-            valid_indices++;
-            break;
-          }
-        }
-        if (valid_indices > k+1) {
-          break;
-        } else if (valid_indices < k) {
-          valid_shape = false;
-          break;
-        } else {
-          counter++;
-        }
+  vector<vector<int>> shape_copy = (t.shape);
+  vector<int> test_coord = shape_copy.at(shape_copy.size() - 1);
+  shape_copy.pop_back();
+  while (!shape_copy.empty()) {
+    for (auto itr = (t.shape).begin(); itr != (t.shape).end(); itr++) {
+      if (test_coord.at(0)-1 == (*itr).at(0) and test_coord.at(1) == (*itr).at(1)) {
+        test_coord.clear();
+        break;        
+      } else if (test_coord.at(0)+1 == (*itr).at(0) and test_coord.at(1) == (*itr).at(1)) {
+        test_coord.clear();
+        break;        
+      } else if (test_coord.at(0) == (*itr).at(0) and test_coord.at(1)-1 == (*itr).at(1)) {
+        test_coord.clear();
+        break;        
+      } else if (test_coord.at(0) == (*itr).at(0) and test_coord.at(1)+1 == (*itr).at(1)) {
+        test_coord.clear();
+        break;        
       }
     }
-    if (valid_indices == (t.shape).size()) valid_shape = true;
-  } else {
-    valid_shape = true;
+    if (!test_coord.empty()) valid_shape = false;
+    test_coord = shape_copy.at(shape_copy.size() - 1);
+    shape_copy.pop_back();
   }
-// END OF REMAKE
 
   // needed a print out when shape or char is invalid
   if (!valid_shape or !include or !valid_char) cout << "invalid tile\n";
