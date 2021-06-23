@@ -245,6 +245,7 @@ void Blokus::reset() {
   Moves.clear();
   inventory.clear();
   move_num = 0;
+  nexttile_id = 100;
 }
 
 // goes through map and prints all of inventory
